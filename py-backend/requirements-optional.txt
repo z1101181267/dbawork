@@ -1,0 +1,12 @@
+# DBAWORK Python 后端可选依赖（尽力安装，失败不阻塞）
+# 说明：pymssql/dmPython/ksycopg2 等可能需要系统级客户端库或工作于特定 Python 版本，
+#       安装失败不影响核心功能与测试。
+#       Oracle 驱动使用官方 python-oracledb（thin 模式纯 Python，无需 Oracle 客户端；
+#       旧 cx_Oracle 已由 oracledb 接替，不再需要）。
+oracledb
+pymssql
+clickhouse-driver
+pymongo
+redis
+dmPython
+ksycopg2

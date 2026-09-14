@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>DBAWORK 系统架构</title>
+<style>html,body{margin:0;padding:0;background:#0B1220;overflow:hidden;}</style>
+</head>
+<body>
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" font-family="'Microsoft YaHei','Segoe UI',sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#5B7290"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1600" height="900" fill="#0B1220"/>
+  <rect x="0" y="0" width="1600" height="6" fill="#1D4ED8" opacity="0.55"/>
+
+  <!-- 标题 -->
+  <text x="60" y="62" font-size="27" font-weight="600" fill="#EAF1FB">DBAWORK · 系统架构与「测试连接」数据流</text>
+  <text x="60" y="92" font-size="14.5" fill="#7E93B0">数据源配置 + 驱动管理（对标 DBCheck）｜Go 网关 + Python 运行时 + Vue 3 前端</text>
+  <text x="1540" y="62" font-size="13" fill="#5B7290" text-anchor="end">protobuf 契约：proto/dbawork.proto</text>
+  <text x="1540" y="84" font-size="13" fill="#5B7290" text-anchor="end">凭据：AES-256-GCM 落库</text>
+
+  <!-- ===== 四个主区块 ===== -->
+  <!-- A 前端 -->
+  <rect x="44" y="150" width="290" height="420" rx="14" fill="#0F1B2E" stroke="#24344F"/>
+  <rect x="44" y="150" width="290" height="4" rx="2" fill="#38BDF8"/>
+  <text x="68" y="196" font-size="20" font-weight="600" fill="#F1F6FC">前端界面</text>
+  <text x="68" y="222" font-size="13" fill="#6E86A8">Vue 3 + Element Plus · :5173</text>
+  <g font-size="14.5" fill="#B6C6DB">
+    <circle cx="73" cy="262" r="3.5" fill="#38BDF8"/><text x="86" y="267">数据源配置页</text>
+    <text x="86" y="290" font-size="12.5" fill="#7E93B0">分组树 · 列表 · 表单 · CSV 导入导出</text>
+    <circle cx="73" cy="322" r="3.5" fill="#38BDF8"/><text x="86" y="327">服务器隧道子表单</text>
+    <text x="86" y="350" font-size="12.5" fill="#7E93B0">SSH（Linux）/ WinRM（Windows）</text>
+    <circle cx="73" cy="382" r="3.5" fill="#38BDF8"/><text x="86" y="387">驱动管理页</text>
+    <text x="86" y="410" font-size="12.5" fill="#7E93B0">全量检测 · 安装 · 上传 JAR · 设默认</text>
+    <circle cx="73" cy="442" r="3.5" fill="#38BDF8"/><text x="86" y="447">状态展示</text>
+    <text x="86" y="470" font-size="12.5" fill="#7E93B0">未测 / 正常 / 异常 · 最近测试时间</text>
+  </g>
+  <text x="68" y="540" font-size="12.5" fill="#647894">请求统一走 /api/v1（Vite 代理 → Go）</text>
+
+  <!-- B Go 网关 -->
+  <rect x="431" y="150" width="340" height="420" rx="14" fill="#0F1B2E" stroke="#24344F"/>
+  <rect x="431" y="150" width="340" height="4" rx="2" fill="#34D399"/>
+  <text x="455" y="196" font-size="20" font-weight="600" fill="#F1F6FC">Go 网关</text>
+  <text x="455" y="222" font-size="13" fill="#6E86A8">Gin · SQLite · :8080</text>
+  <g font-size="14.5" fill="#B6C6DB">
+    <circle cx="460" cy="262" r="3.5" fill="#34D399"/><text x="473" y="267">REST API（/api/v1）</text>
+    <text x="473" y="290" font-size="12.5" fill="#7E93B0">datasources · groups · drivers · db-types</text>
+    <circle cx="460" cy="322" r="3.5" fill="#34D399"/><text x="473" y="327">JWT 鉴权中间件（登录占位）</text>
+    <circle cx="460" cy="370" r="3.5" fill="#34D399"/><text x="473" y="375">SQLite 元数据（modernc 纯 Go）</text>
+    <text x="473" y="398" font-size="12.5" fill="#7E93B0">群组 / 数据源 / 驱动 / 类型目录</text>
+    <circle cx="460" cy="430" r="3.5" fill="#34D399"/><text x="473" y="435">AES-GCM 凭据加密</text>
+    <text x="473" y="458" font-size="12.5" fill="#7E93B0">主密钥 data/secret.key</text>
+    <circle cx="460" cy="490" r="3.5" fill="#34D399"/><text x="473" y="495">gRPC Client → Python</text>
+    <text x="473" y="518" font-size="12.5" fill="#7E93B0">连接测试 · 驱动检测 · JAR 上传</text>
+  </g>
+
+  <!-- C Python 运行时 -->
+  <rect x="868" y="150" width="360" height="420" rx="14" fill="#0F1B2E" stroke="#24344F"/>
+  <rect x="868" y="150" width="360" height="4" rx="2" fill="#F59E0B"/>
+  <text x="892" y="196" font-size="20" font-weight="600" fill="#F1F6FC">Python 运行时</text>
+  <text x="892" y="222" font-size="13" fill="#6E86A8">gRPC :50051 · FastAPI :8000</text>
+  <g font-size="14.5" fill="#B6C6DB">
+    <circle cx="897" cy="262" r="3.5" fill="#F59E0B"/><text x="910" y="267">ConnectionService</text>
+    <text x="910" y="290" font-size="12.5" fill="#7E93B0">TestConnection · TestConnectionById</text>
+    <circle cx="897" cy="322" r="3.5" fill="#F59E0B"/><text x="910" y="327">DriverService（8 个 RPC）</text>
+    <text x="910" y="350" font-size="12.5" fill="#7E93B0">检测 · 安装 · 卸载 · JAR 管理 · 设默认</text>
+    <circle cx="897" cy="382" r="3.5" fill="#F59E0B"/><text x="910" y="387">适配器 registry</text>
+    <text x="910" y="410" font-size="12.5" fill="#7E93B0">MySQL · Oracle · PostgreSQL · MSSQL · SQLite</text>
+    <circle cx="897" cy="442" r="3.5" fill="#F59E0B"/><text x="910" y="447">驱动运行时与隧道</text>
+    <text x="910" y="470" font-size="12.5" fill="#7E93B0">pip_manager · ssh_tunnel · winrm_tunnel</text>
+  </g>
+  <text x="892" y="540" font-size="12.5" fill="#647894">驱动可用状态检测后回写 Go（installed）</text>
+
+  <!-- D 目标环境 -->
+  <rect x="1325" y="150" width="231" height="420" rx="14" fill="#0F1B2E" stroke="#24344F"/>
+  <rect x="1325" y="150" width="231" height="4" rx="2" fill="#A78BFA"/>
+  <text x="1349" y="196" font-size="20" font-weight="600" fill="#F1F6FC">目标环境</text>
+  <text x="1349" y="222" font-size="13" fill="#6E86A8">数据库与服务器</text>
+  <g font-size="13.5" fill="#B6C6DB">
+    <circle cx="1354" cy="262" r="3.5" fill="#A78BFA"/><text x="1366" y="267">数据库服务器（Linux）</text>
+    <text x="1366" y="288" font-size="12" fill="#7E93B0">SSH 隧道 · :22</text>
+    <circle cx="1354" cy="322" r="3.5" fill="#A78BFA"/><text x="1366" y="327">Windows 服务器</text>
+    <text x="1366" y="348" font-size="12" fill="#7E93B0">WinRM 隧道 · :5985/5986</text>
+    <circle cx="1354" cy="382" r="3.5" fill="#A78BFA"/><text x="1366" y="387">目标数据库</text>
+    <text x="1366" y="408" font-size="12" fill="#7E93B0">MySQL / Oracle / PG</text>
+    <text x="1366" y="427" font-size="12" fill="#7E93B0">SQL Server / SQLite …</text>
+    <circle cx="1354" cy="462" r="3.5" fill="#A78BFA"/><text x="1366" y="467">端口映射后</text>
+    <text x="1366" y="486" font-size="12" fill="#7E93B0">由适配器直连库端口</text>
+  </g>
+
+  <!-- ===== 连接箭头 ===== -->
+  <line x1="334" y1="360" x2="427" y2="360" stroke="#5B7290" stroke-width="1.6" marker-end="url(#arr)"/>
+  <text x="380" y="348" font-size="12.5" fill="#8FA6C4" text-anchor="middle">/api/v1 JSON</text>
+
+  <line x1="771" y1="360" x2="864" y2="360" stroke="#5B7290" stroke-width="1.6" marker-end="url(#arr)"/>
+  <text x="818" y="348" font-size="12.5" fill="#8FA6C4" text-anchor="middle">gRPC :50051</text>
+
+  <line x1="1228" y1="360" x2="1321" y2="360" stroke="#5B7290" stroke-width="1.6" marker-end="url(#arr)"/>
+  <text x="1275" y="348" font-size="12.5" fill="#8FA6C4" text-anchor="middle">隧道转发</text>
+
+  <!-- ===== 数据流条 ===== -->
+  <text x="60" y="648" font-size="18.5" font-weight="600" fill="#EAF1FB">数据流 · 测试连接（TestConnection）</text>
+  <text x="1540" y="648" font-size="13" fill="#5B7290" text-anchor="end">回写后前端刷新状态列（未测/正常/异常）</text>
+
+  <g>
+    <!-- 步骤 1 -->
+    <rect x="60" y="668" width="206" height="76" rx="8" fill="#101B30" stroke="#24344F"/>
+    <circle cx="86" cy="692" r="12" fill="#1D4ED8" opacity="0.85"/><text x="86" y="697" font-size="13" fill="#EAF1FB" text-anchor="middle">1</text>
+    <text x="106" y="697" font-size="13.5" fill="#C7D4E6">前端发起测试</text>
+    <text x="76" y="722" font-size="12" fill="#7E93B0">POST /datasources/:id/test</text>
+
+    <line x1="270" y1="706" x2="294" y2="706" stroke="#5B7290" marker-end="url(#arr)"/>
+
+    <rect x="298" y="668" width="206" height="76" rx="8" fill="#101B30" stroke="#24344F"/>
+    <circle cx="324" cy="692" r="12" fill="#1D4ED8" opacity="0.85"/><text x="324" y="697" font-size="13" fill="#EAF1FB" text-anchor="middle">2</text>
+    <text x="344" y="697" font-size="13.5" fill="#C7D4E6">Go 读取并解密</text>
+    <text x="314" y="722" font-size="12" fill="#7E93B0">AES-GCM 解出明文凭据</text>
+
+    <line x1="508" y1="706" x2="532" y2="706" stroke="#5B7290" marker-end="url(#arr)"/>
+
+    <rect x="536" y="668" width="206" height="76" rx="8" fill="#101B30" stroke="#24344F"/>
+    <circle cx="562" cy="692" r="12" fill="#1D4ED8" opacity="0.85"/><text x="562" y="697" font-size="13" fill="#EAF1FB" text-anchor="middle">3</text>
+    <text x="582" y="697" font-size="13.5" fill="#C7D4E6">gRPC 调用</text>
+    <text x="552" y="722" font-size="12" fill="#7E93B0">TestConnection + 隧道配置</text>
+
+    <line x1="746" y1="706" x2="770" y2="706" stroke="#5B7290" marker-end="url(#arr)"/>
+
+    <rect x="774" y="668" width="206" height="76" rx="8" fill="#101B30" stroke="#24344F"/>
+    <circle cx="800" cy="692" r="12" fill="#1D4ED8" opacity="0.85"/><text x="800" y="697" font-size="13" fill="#EAF1FB" text-anchor="middle">4</text>
+    <text x="820" y="697" font-size="13.5" fill="#C7D4E6">Python 执行</text>
+    <text x="790" y="722" font-size="12" fill="#7E93B0">隧道转发 → 适配器连库</text>
+
+    <line x1="984" y1="706" x2="1008" y2="706" stroke="#5B7290" marker-end="url(#arr)"/>
+
+    <rect x="1012" y="668" width="206" height="76" rx="8" fill="#101B30" stroke="#24344F"/>
+    <circle cx="1038" cy="692" r="12" fill="#1D4ED8" opacity="0.85"/><text x="1038" y="697" font-size="13" fill="#EAF1FB" text-anchor="middle">5</text>
+    <text x="1058" y="697" font-size="13.5" fill="#C7D4E6">结果返回</text>
+    <text x="1028" y="722" font-size="12" fill="#7E93B0">ok · db_version · latency_ms</text>
+
+    <line x1="1222" y1="706" x2="1246" y2="706" stroke="#5B7290" marker-end="url(#arr)"/>
+
+    <rect x="1250" y="668" width="290" height="76" rx="8" fill="#101B30" stroke="#24344F"/>
+    <circle cx="1276" cy="692" r="12" fill="#1D4ED8" opacity="0.85"/><text x="1276" y="697" font-size="13" fill="#EAF1FB" text-anchor="middle">6</text>
+    <text x="1296" y="697" font-size="13.5" fill="#C7D4E6">状态回写 + 前端刷新</text>
+    <text x="1266" y="722" font-size="11.5" fill="#7E93B0">status 0/1/2 · last_test_at · last_error</text>
+  </g>
+
+  <!-- 底注 -->
+  <line x1="60" y1="800" x2="1540" y2="800" stroke="#1B2A44" stroke-width="1"/>
+  <text x="60" y="828" font-size="12.5" fill="#647894">凭据仅以密文落库；Go → Python 为内网 gRPC（按设计明文传输）｜ WinRM 隧道经 netsh portproxy 端口转发，SSH 隧道经本地端口转发</text>
+  <text x="1540" y="828" font-size="12.5" fill="#647894" text-anchor="end">DBCheck 风格 · 2026-09-14</text>
+</svg>
+</body>
+</html>

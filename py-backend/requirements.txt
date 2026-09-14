@@ -1,0 +1,13 @@
+# DBAWORK Python 后端核心依赖（必须安装）
+# 安装：.venv\Scripts\python.exe -m pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+grpcio
+grpcio-tools
+protobuf
+fastapi
+uvicorn[standard]
+sshtunnel
+pywinrm
+pymysql
+psycopg2-binary
+requests
+pytest

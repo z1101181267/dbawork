@@ -1,0 +1,144 @@
+// DBAWORK gRPC 契约 —— Go 网关 (客户端) <-> Python 数据库运行时 (服务端)
+// 生成方式见 scripts/gen_proto.ps1（Go）与 py-backend/tools/gen_proto.py（Python）
+syntax = "proto3";
+
+package dbawork.v1;
+
+option go_package = "dbawork/proto/dbaworkv1;dbaworkv1";
+
+message Empty {}
+
+message Result {
+  bool ok = 1;
+  string message = 2;
+  string detail = 3;
+}
+
+// 服务器隧道 (SSH for Linux / WinRM for Windows)
+message ServerTunnel {
+  string tunnel_type = 1;             // none/ssh/winrm
+  string host = 2;
+  int32  port = 3;                    // ssh=22, winrm=5985(http)/5986(https)
+  string user = 4;
+  string password = 5;
+  // SSH 专用
+  string private_key = 6;             // 私钥内容或绝对路径
+  string key_passphrase = 7;
+  // WinRM 专用
+  string auth_scheme = 8;             // basic/ntlm/kerberos
+  string transport = 9;               // http/https
+  bool   use_ssl = 10;
+}
+
+message DataSourceConn {
+  int32  id = 1;
+  string db_type = 2;
+  string host = 3;
+  int32  port = 4;
+  string db_name = 5;
+  string username = 6;
+  string password = 7;
+  map<string, string> extra = 8;
+  ServerTunnel tunnel = 9;
+}
+
+message TestResult {
+  bool   ok = 1;
+  string error = 2;
+  string db_version = 3;
+  int32  latency_ms = 4;
+  string tested_at = 5;               // RFC3339
+}
+
+message DsIdRequest {
+  int32 id = 1;
+}
+
+service ConnectionService {
+  rpc TestConnection(DataSourceConn) returns (TestResult);
+  rpc TestConnectionById(DsIdRequest) returns (TestResult);
+}
+
+// ---------------- 驱动管理 ----------------
+
+message DbTypeInfo {
+  string key = 1;
+  string name_zh = 2;
+  string name_en = 3;
+  string driver_class_hint = 4;
+  bool   is_jdbc = 5;
+  int32  order = 6;
+  bool   is_custom = 7;
+}
+
+message ListDbTypesRequest {
+  bool include_hidden = 1;
+}
+
+message ListDbTypesReply {
+  repeated DbTypeInfo types = 1;
+}
+
+message DriverStatus {
+  string db_type = 1;
+  string driver_kind = 2;             // python | jdbc
+  string package_name = 3;
+  bool   installed = 4;
+  string installed_version = 5;
+  string note = 6;
+}
+
+message DetectAllReply {
+  repeated DriverStatus statuses = 1;
+}
+
+message DetectOneRequest {
+  string db_type = 1;
+}
+
+message InstallDriverRequest {
+  string db_type = 1;
+  string driver_kind = 2;
+  string package_name = 3;
+  string version = 4;
+}
+
+message UninstallDriverRequest {
+  string db_type = 1;
+  string driver_kind = 2;
+}
+
+message UploadJarRequest {
+  string db_type = 1;
+  string version = 2;
+  string driver_class = 3;
+  string jar_filename = 4;
+  bytes  jar_bytes = 5;
+}
+
+message UploadJarReply {
+  bool   ok = 1;
+  string jar_path = 2;
+  int64  file_size = 3;
+  string message = 4;
+}
+
+message DeleteJarRequest {
+  string jar_path = 1;
+}
+
+message ActivateDriverRequest {
+  string db_type = 1;
+  int32  driver_id = 2;
+}
+
+service DriverService {
+  rpc ListDbTypes(ListDbTypesRequest) returns (ListDbTypesReply);
+  rpc DetectAll(Empty) returns (DetectAllReply);
+  rpc DetectOne(DetectOneRequest) returns (DriverStatus);
+  rpc InstallDriver(InstallDriverRequest) returns (Result);
+  rpc UninstallDriver(UninstallDriverRequest) returns (Result);
+  rpc UploadJar(UploadJarRequest) returns (UploadJarReply);
+  rpc DeleteJar(DeleteJarRequest) returns (Result);
+  rpc ActivateDriver(ActivateDriverRequest) returns (Result);
+}

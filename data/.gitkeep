@@ -1,0 +1,7 @@
+运行时数据目录（首次启动自动生成）：
+- metadata.db     SQLite 元数据（Go 网关自动创建）
+- secret.key     AES-GCM 主密钥（首次启动自动生成）
+- drivers/       JAR 驱动文件与桥接目录
+- *.log          服务日志
+
+本目录内容不入库。

@@ -1,0 +1,30 @@
+# --- Python ---
+__pycache__/
+*.pyc
+.venv/
+venv/
+.tools/
+.pytest_cache/
+*.egg-info/
+
+# --- Node ---
+node_modules/
+dist/
+.vite/
+
+# --- Go ---
+go-backend/bin/
+*.exe
+*.test
+
+# --- Runtime data ---
+data/metadata.db
+data/metadata.db-*
+data/drivers/
+data/secret.key
+data/*.log
+
+# --- Misc ---
+.DS_Store
+Thumbs.db
+*.tmp

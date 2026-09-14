@@ -1,0 +1,42 @@
+# DBAWORK 三服务编排：Go 网关 / Python 运行时 / 前端
+# 使用前请确保 ../data 目录存在（元数据、密钥、驱动文件均落在此目录，Go 与 Python 共享）
+services:
+  py-backend:
+    build: ../py-backend
+    container_name: dbawork-py
+    ports:
+      - "50051:50051"   # gRPC
+      - "8000:8000"     # FastAPI
+    environment:
+      - DBAWORK_DATA_DIR=/data
+      - GRPC_PORT=50051
+      - API_PORT=8000
+    volumes:
+      - ../data:/data
+    restart: unless-stopped
+
+  go-backend:
+    build: ../go-backend
+    container_name: dbawork-go
+    ports:
+      - "8080:8080"
+    environment:
+      - DBAWORK_DATA_DIR=/data
+      - DBAWORK_PY_GRPC=py-backend:50051
+      # 启用 JWT 鉴权时打开以下两项（默认关闭）
+      # - DBAWORK_AUTH_ENABLED=true
+      # - DBAWORK_JWT_SECRET=change-me
+    volumes:
+      - ../data:/data
+    depends_on:
+      - py-backend
+    restart: unless-stopped
+
+  frontend:
+    build: ../frontend
+    container_name: dbawork-web
+    ports:
+      - "8081:80"
+    depends_on:
+      - go-backend
+    restart: unless-stopped
